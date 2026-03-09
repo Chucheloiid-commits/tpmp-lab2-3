@@ -1,0 +1,46 @@
+name: New Build Process
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+      
+      - name: Debug - show files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in repository:"
+          ls -la
+      
+      - name: Build project
+        run: |
+          if [ -f "Makefile" ] || [ -f "makefile" ]; then
+            make
+          else
+            echo "No Makefile found, creating test file"
+            echo "int main() { return 0; }" > test.c
+            gcc -o test test.c
+          fi
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            *.o
+            *.out
+            test
